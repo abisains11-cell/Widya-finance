@@ -1,0 +1,1570 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#fbf8fa">
+  <title>Widya Finance AI</title>
+  <style>
+    :root {
+      --bg: #fbf8fa;
+      --ink: #393443;
+      --muted: #8b8492;
+      --purple: #8d78b8;
+      --purple-dark: #745fa3;
+      --line: #f0eaf0;
+      --green: #47866c;
+      --amber: #d9822b;
+      --red: #bd7180;
+      --card: #ffffff;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      padding-bottom: 88px;
+    }
+    .wrap {
+      max-width: 520px;
+      margin: auto;
+      padding: calc(18px + env(safe-area-inset-top)) 16px 20px;
+    }
+    .hidden { display: none !important; }
+
+    /* PIN LOCK & SETUP SCREEN */
+    .pin-screen {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      max-width: 420px;
+      margin: auto;
+      padding: calc(24px + env(safe-area-inset-top)) 20px 24px;
+      text-align: center;
+    }
+    .pin-logo {
+      width: 60px; height: 60px; border-radius: 20px;
+      background: linear-gradient(135deg, #eadcf5, #f6dfe9);
+      display: grid; place-items: center; font-size: 28px; margin: 0 auto 14px;
+      box-shadow: 0 8px 20px rgba(141, 120, 184, 0.15);
+    }
+    .pin-display-wrap {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      margin: 18px 0 8px; min-height: 28px;
+    }
+    .pin-dots {
+      display: flex; justify-content: center; gap: 12px; align-items: center;
+    }
+    .pin-dot {
+      width: 14px; height: 14px; border-radius: 50%;
+      border: 2px solid var(--purple); background: transparent;
+      transition: all 0.15s ease;
+    }
+    .pin-dot.filled { background: var(--purple); transform: scale(1.1); }
+    .pin-plain-text {
+      font-size: 22px; font-weight: 800; letter-spacing: 6px; color: var(--purple-dark);
+    }
+    .pin-hint { font-size: 12px; color: var(--muted); min-height: 18px; margin-bottom: 14px; }
+    .keypad {
+      display: grid; grid-template-columns: repeat(3, 74px); gap: 13px;
+      justify-content: center; margin: 6px 0 16px;
+    }
+    .key-btn {
+      width: 74px; height: 60px; border-radius: 20px;
+      border: 1px solid var(--line); background: #fff;
+      font-size: 22px; font-weight: 700; color: var(--ink);
+      cursor: pointer; box-shadow: 0 3px 10px rgba(57, 52, 67, 0.04);
+      display: grid; place-items: center;
+    }
+    .key-btn:active { background: #f3ecf8; transform: scale(0.96); }
+    .key-btn.fn { font-size: 14px; color: var(--muted); background: #f8f4fb; }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-8px); }
+      75% { transform: translateX(8px); }
+    }
+    .shake { animation: shake 0.25s ease; }
+
+    /* HEADER & DASHBOARD */
+    header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin: 4px 2px 18px;
+    }
+    .brand { display: flex; gap: 10px; align-items: center; }
+    .logo {
+      width: 42px; height: 42px; border-radius: 15px;
+      background: linear-gradient(135deg, #eadcf5, #f6dfe9);
+      display: grid; place-items: center; font-size: 21px;
+    }
+    h1 { font-size: 18px; margin: 0; }
+    .sub, .eyebrow { font-size: 12px; color: var(--muted); }
+    .header-actions { display: flex; align-items: center; gap: 7px; }
+    .icon-pill {
+      width: 35px; height: 35px; border-radius: 50%;
+      border: 1px solid var(--line); background: #fff;
+      display: grid; place-items: center; font-size: 14px; cursor: pointer;
+    }
+    .avatar {
+      width: 37px; height: 37px; border-radius: 50%; background: #dff1e9;
+      display: grid; place-items: center; font-weight: 700; color: var(--green); cursor: pointer;
+    }
+    .balance {
+      border-radius: 25px; padding: 20px;
+      background: linear-gradient(135deg, #eee6f7, #f8e5ed 58%, #e4f2eb);
+    }
+    .label { font-size: 13px; color: #6f6878; }
+    .amount { font-size: 29px; font-weight: 800; margin: 6px 0 14px; }
+    .pills { display: flex; gap: 7px; flex-wrap: wrap; }
+    .pill { font-size: 11px; background: #ffffffc4; padding: 6px 10px; border-radius: 20px; font-weight: 600; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; margin-top: 12px; }
+    .stat, .card, .tx {
+      background: var(--card); border: 1px solid var(--line); border-radius: 19px; padding: 14px;
+    }
+    .stat-top { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+    .stat strong { display: block; font-size: 16px; margin-top: 8px; }
+    .income strong { color: var(--green); }
+    .expense strong { color: var(--red); }
+
+    /* WALLETS ROW */
+    .wallet-row {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 11px;
+    }
+    .wallet-card {
+      background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 11px 10px;
+    }
+    .wallet-name { font-size: 11px; color: var(--muted); font-weight: 600; }
+    .wallet-bal { font-size: 13px; font-weight: 800; margin-top: 5px; color: var(--ink); word-break: break-word; }
+
+    /* QUICK AI & CHAT */
+    .card { margin-top: 16px; }
+    .card-title { font-weight: 750; font-size: 14px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .chip-row { display: flex; gap: 6px; overflow-x: auto; padding: 10px 0 4px; scrollbar-width: none; }
+    .chip {
+      white-space: nowrap; font-size: 11px; background: #f4eff8; color: var(--purple-dark);
+      border: 1px solid #e6dcf0; padding: 6px 11px; border-radius: 20px; cursor: pointer; font-weight: 600;
+    }
+    .chip.active { background: var(--purple); color: #fff; border-color: var(--purple); }
+    .chat-box {
+      max-height: 360px; overflow-y: auto; display: flex; flex-direction: column;
+      gap: 10px; margin: 12px 0; padding-right: 2px;
+    }
+    .msg {
+      max-width: 88%; padding: 11px 13px; border-radius: 16px; font-size: 13px; line-height: 1.45;
+    }
+    .msg.user {
+      align-self: flex-end; background: var(--purple); color: #fff; border-bottom-right-radius: 4px;
+    }
+    .msg.ai {
+      align-self: flex-start; background: #f8f4fb; color: #4d4558;
+      border: 1px solid #ece3f3; border-bottom-left-radius: 4px;
+    }
+    .msg img.receipt-thumb {
+      max-width: 100%; border-radius: 10px; margin-bottom: 6px; display: block;
+    }
+    .receipt-card {
+      background: #fff; border: 1px solid #e6dcf0; border-radius: 12px; padding: 10px; margin-top: 6px;
+    }
+    .card-actions {
+      display: flex; gap: 12px; margin-top: 8px; padding-top: 7px; border-top: 1px dashed #ece3f3;
+      font-size: 11px; font-weight: 700;
+    }
+    .inputrow { display: flex; gap: 7px; align-items: center; }
+    .inputrow input[type="text"], .search-input {
+      min-width: 0; flex: 1; border: 1px solid #e9e1eb; border-radius: 13px;
+      padding: 11px 12px; font: inherit; font-size: 13px; background: #fff; width: 100%;
+    }
+    .icon-btn {
+      border: 1px solid #e9e1eb; background: #f8f4fb; color: var(--purple);
+      border-radius: 13px; width: 42px; height: 42px; display: grid; place-items: center;
+      font-size: 18px; cursor: pointer; flex-shrink: 0;
+    }
+    .btn {
+      border: 0; border-radius: 13px; padding: 11px 15px; background: var(--purple);
+      color: #fff; font-weight: 700; font-size: 13px; cursor: pointer;
+    }
+    .btn-outline {
+      border: 1px solid #e4daec; background: #f8f4fb; color: var(--purple-dark);
+      border-radius: 13px; padding: 11px 14px; font-weight: 700; font-size: 13px; cursor: pointer; width: 100%;
+    }
+
+    /* TRANSACTIONS */
+    .section-head {
+      display: flex; justify-content: space-between; align-items: center; margin: 20px 2px 11px;
+    }
+    .section-head h2 { font-size: 16px; margin: 0; }
+    .link { font-size: 12px; color: var(--purple); font-weight: 700; cursor: pointer; }
+    .link.danger { color: var(--red); }
+    .tx { display: flex; align-items: center; gap: 11px; margin-bottom: 9px; padding: 13px; }
+    .txicon {
+      width: 39px; height: 39px; border-radius: 13px; background: #f4eff8;
+      display: grid; place-items: center; font-size: 16px; flex-shrink: 0;
+    }
+    .txname { font-size: 13px; font-weight: 700; }
+    .txdate { font-size: 11px; color: var(--muted); margin-top: 3px; }
+    .wallet-tag {
+      display: inline-block; background: #f3eef8; color: var(--purple-dark);
+      padding: 1px 6px; border-radius: 6px; font-weight: 600; font-size: 10px;
+    }
+    .txright { margin-left: auto; text-align: right; }
+    .txamount { font-size: 13px; font-weight: 750; }
+    .txtools { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; font-size: 11px; }
+    .empty { text-align: center; color: var(--muted); font-size: 12px; padding: 18px; }
+
+    /* REPORTS & BUDGET BARS */
+    .filter-select {
+      border: 1px solid #e6dcf0; background: #f8f4fb; color: var(--purple-dark);
+      border-radius: 10px; padding: 6px 10px; font-size: 12px; font-weight: 700;
+    }
+    .bar-wrap { margin-top: 12px; }
+    .bar-row { margin-bottom: 13px; }
+    .bar-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; font-weight: 600; }
+    .bar-track { height: 10px; background: #f2ecf6; border-radius: 99px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 99px; transition: width 0.3s ease; }
+    .budget-sub { font-size: 11px; color: var(--muted); margin-top: 3px; display: flex; justify-content: space-between; }
+
+    /* BOTTOM NAV */
+    nav {
+      position: fixed; bottom: 0; left: 0; right: 0; background: #fffffff5;
+      backdrop-filter: blur(8px); border-top: 1px solid var(--line);
+      display: flex; justify-content: space-around;
+      padding: 10px 5px calc(10px + env(safe-area-inset-bottom));
+      color: var(--muted); font-size: 10px; z-index: 4;
+    }
+    nav span { cursor: pointer; text-align: center; flex: 1; }
+    nav span.active { color: var(--purple); font-weight: 700; }
+    nav b { display: block; font-size: 19px; margin-bottom: 2px; }
+
+    /* MODAL & FORMS */
+    .modal {
+      display: none; position: fixed; inset: 0; background: #2d263666;
+      z-index: 10; align-items: flex-end; justify-content: center;
+    }
+    .sheet {
+      background: #fff; width: min(520px, 100%); border-radius: 24px 24px 0 0;
+      padding: 22px 18px calc(24px + env(safe-area-inset-bottom));
+      max-height: 90vh; overflow-y: auto;
+    }
+    .sheet h3 { margin: 0 0 14px; font-size: 16px; }
+    .field { margin: 10px 0; text-align: left; }
+    .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+    .field input, .field select {
+      width: 100%; padding: 11px 12px; border: 1px solid #e9e1eb;
+      border-radius: 12px; font: inherit; font-size: 13px; background: #fff;
+    }
+    .actions { display: flex; gap: 9px; margin-top: 16px; }
+    .actions button { flex: 1; padding: 13px; }
+  </style>
+</head>
+<body>
+
+  <!-- LAYAR KUNCI PIN 4-6 DIGIT / SETUP AWAL -->
+  <section id="pin-screen" class="pin-screen hidden">
+    <div class="pin-logo">✿</div>
+    <h1 id="pin-title">Widya Finance AI</h1>
+    <div class="sub" id="pin-subtitle" style="margin-top:4px;">Masukkan PIN 4–6 digit untuk membuka aplikasi</div>
+
+    <!-- Form Nama & Pemulihan saat Setup / Ubah PIN -->
+    <div id="setup-name-box" class="hidden" style="width:100%;max-width:300px;margin-top:10px;">
+      <div class="field">
+        <label>Nama Panggilan Kamu</label>
+        <input id="setup-user-name" type="text" placeholder="Contoh: Widya">
+      </div>
+      <div class="field">
+        <label>Kata Pemulihan (Jika Lupa PIN)</label>
+        <input id="setup-recovery-word" type="text" placeholder="Contoh: Medan / Kucing">
+      </div>
+    </div>
+
+    <div class="pin-display-wrap">
+      <div class="pin-dots" id="pin-dots"></div>
+      <button type="button" id="toggle-pin-eye" class="icon-pill hidden" style="width:30px;height:30px;font-size:13px;" title="Lihat Angka PIN" onclick="togglePinEye()">👁️</button>
+    </div>
+    <div class="pin-hint" id="pin-hint">Minimal 4 angka, maksimal 6 angka</div>
+
+    <div class="keypad">
+      <button type="button" class="key-btn" onclick="pressPin('1')">1</button>
+      <button type="button" class="key-btn" onclick="pressPin('2')">2</button>
+      <button type="button" class="key-btn" onclick="pressPin('3')">3</button>
+      <button type="button" class="key-btn" onclick="pressPin('4')">4</button>
+      <button type="button" class="key-btn" onclick="pressPin('5')">5</button>
+      <button type="button" class="key-btn" onclick="pressPin('6')">6</button>
+      <button type="button" class="key-btn" onclick="pressPin('7')">7</button>
+      <button type="button" class="key-btn" onclick="pressPin('8')">8</button>
+      <button type="button" class="key-btn" onclick="pressPin('9')">9</button>
+      <button type="button" class="key-btn fn" onclick="clearPin()">Hapus</button>
+      <button type="button" class="key-btn" onclick="pressPin('0')">0</button>
+      <button type="button" class="key-btn fn" onclick="backspacePin()">⌫</button>
+    </div>
+
+    <div id="unlock-pin-actions" class="hidden" style="margin-top:4px;">
+      <span class="link" onclick="recoverForgottenPin()">Lupa PIN?</span>
+    </div>
+
+    <div id="setup-pin-actions" class="hidden" style="width:100%;max-width:270px;">
+      <button type="button" class="btn" style="width:100%;padding:13px;" onclick="saveNewPinSetup()">Simpan PIN & Masuk</button>
+      <div style="margin-top:12px;">
+        <span class="link" id="skip-pin-link" onclick="skipPinSetup()">Masuk Tanpa Kunci PIN</span>
+        <span class="link hidden" id="cancel-pin-link" onclick="cancelPinChange()">Batal Ubah PIN</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- APLIKASI UTAMA -->
+  <div id="app-screen" class="hidden">
+    <main class="wrap">
+      <header>
+        <div class="brand">
+          <div class="logo">✿</div>
+          <div>
+            <h1>Widya Finance AI</h1>
+            <div class="sub" id="greeting-user">Halo, Widya</div>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button class="icon-pill" id="lock-now-btn" title="Kunci Aplikasi" onclick="lockAppNow()">🔒</button>
+          <button class="icon-pill" id="sound-toggle-btn" title="Suara" onclick="toggleSound()">🔊</button>
+          <div class="avatar" id="user-avatar" onclick="playSound('tap'); switchTab('profil')">W</div>
+        </div>
+      </header>
+
+      <!-- TAB 1: BERANDA -->
+      <div id="view-beranda">
+        <p class="eyebrow">RINGKASAN KEUANGAN</p>
+        <section class="balance">
+          <div class="label">Total seluruh saldo</div>
+          <div class="amount" id="balance">Rp0</div>
+          <div class="pills">
+            <span class="pill">✿ Rupiah (IDR)</span>
+            <span class="pill" id="saving-pill">Tabungan: 0%</span>
+          </div>
+        </section>
+
+        <!-- PEMISAHAN SALDO DOMPET / METODE BAYAR -->
+        <div class="wallet-row">
+          <div class="wallet-card">
+            <div class="wallet-name">💵 Tunai</div>
+            <div class="wallet-bal" id="bal-Tunai">Rp0</div>
+          </div>
+          <div class="wallet-card">
+            <div class="wallet-name">🏦 Bank</div>
+            <div class="wallet-bal" id="bal-Bank">Rp0</div>
+          </div>
+          <div class="wallet-card">
+            <div class="wallet-name">📱 E-Wallet</div>
+            <div class="wallet-bal" id="bal-E-Wallet">Rp0</div>
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="stat income">
+            <div class="stat-top">Pemasukan <span>↙</span></div>
+            <strong id="income">Rp0</strong>
+          </div>
+          <div class="stat expense">
+            <div class="stat-top">Pengeluaran <span>↗</span></div>
+            <strong id="expense">Rp0</strong>
+          </div>
+        </div>
+
+        <!-- CHAT PENCATAT & FOTO STRUK OFFLINE -->
+        <section class="card">
+          <div class="card-title">
+            <span>✧ Catat Cepat & Foto Struk</span>
+            <span class="link" onclick="playSound('tap'); triggerAIAnalysis()">Analisis</span>
+          </div>
+
+          <div class="chip-row">
+            <span class="chip" onclick="fillChat('Gaji bulan ini 5.000.000 masuk bank')">+ Gaji 5jt Bank</span>
+            <span class="chip" onclick="fillChat('Makan siang 25.000 qris')">- Makan 25rb QRIS</span>
+            <span class="chip" onclick="fillChat('BBM 30.000 tunai, parkir 2.000')">- Multi Dompet</span>
+            <span class="chip" onclick="playSound('tap'); triggerAIAnalysis()">📊 Analisis Keuangan</span>
+          </div>
+
+          <div class="chat-box" id="chat-box"></div>
+
+          <div class="inputrow">
+            <label class="icon-btn" title="Foto / Unggah Struk" onclick="playSound('tap')">
+              📷
+              <input type="file" id="receipt-input" accept="image/*" capture="environment" class="hidden" onchange="handleReceiptUpload(event)">
+            </label>
+            <input id="chat-input" type="text" placeholder="Ketik: Makan 25.000 qris atau foto struk..." onkeydown="if(event.key==='Enter') sendChat()">
+            <button class="btn" onclick="sendChat()">Kirim</button>
+          </div>
+        </section>
+
+        <div class="section-head">
+          <h2>Transaksi terbaru</h2>
+          <span class="link" onclick="playSound('tap'); openModal()">＋ Input Manual</span>
+        </div>
+        <div id="transactions-home"></div>
+      </div>
+
+      <!-- TAB 2: SEMUA TRANSAKSI -->
+      <div id="view-transaksi" class="hidden">
+        <div class="section-head" style="margin-top:0;">
+          <h2>Riwayat Transaksi</h2>
+          <span class="link" onclick="playSound('tap'); openModal()">＋ Tambah</span>
+        </div>
+
+        <input id="search-tx" class="search-input" type="text" placeholder="🔍 Cari nama transaksi, kategori, atau dompet..." oninput="renderTxViews()">
+        <div class="chip-row" style="margin-bottom:4px;">
+          <span class="chip active" id="flt-all" onclick="setTxFilter('all')">Semua</span>
+          <span class="chip" id="flt-income" onclick="setTxFilter('income')">Pemasukan</span>
+          <span class="chip" id="flt-expense" onclick="setTxFilter('expense')">Pengeluaran</span>
+        </div>
+        <div class="chip-row" style="margin-bottom:10px;padding-top:4px;">
+          <span class="chip active" id="wflt-all" onclick="setWalletFilter('all')">Semua Dompet</span>
+          <span class="chip" id="wflt-Tunai" onclick="setWalletFilter('Tunai')">💵 Tunai</span>
+          <span class="chip" id="wflt-Bank" onclick="setWalletFilter('Bank')">🏦 Bank</span>
+          <span class="chip" id="wflt-E-Wallet" onclick="setWalletFilter('E-Wallet')">📱 E-Wallet</span>
+        </div>
+
+        <div id="transactions-all"></div>
+      </div>
+
+      <!-- TAB 3: LAPORAN & BATAS ANGGARAN -->
+      <div id="view-laporan" class="hidden">
+        <div class="section-head" style="margin-top:0;">
+          <h2>Laporan & Anggaran</h2>
+          <select id="report-period" class="filter-select" onchange="playSound('tap'); renderReports()">
+            <option value="month">Bulan Ini</option>
+            <option value="year">Tahun Ini</option>
+            <option value="all">Semua Waktu</option>
+          </select>
+        </div>
+
+        <section class="card" style="margin-top:0;">
+          <div class="card-title">
+            <span>Arus Kas Periode Terpilih</span>
+            <span class="link" onclick="playSound('tap'); triggerAIAnalysis(); switchTab('beranda');">Lihat Analisis</span>
+          </div>
+          <div class="bar-wrap" id="cashflow-bars"></div>
+        </section>
+
+        <!-- BATAS ANGGARAN BULANAN PER KATEGORI -->
+        <section class="card">
+          <div class="card-title">
+            <span>Batas Anggaran Bulan Ini</span>
+            <span class="link" onclick="playSound('tap'); openBudgetModal()">⚙️ Atur Batas</span>
+          </div>
+          <div class="bar-wrap" id="budget-bars"></div>
+        </section>
+
+        <section class="card">
+          <div class="card-title">Pengeluaran per Kategori</div>
+          <div class="bar-wrap" id="category-bars"></div>
+        </section>
+      </div>
+
+      <!-- TAB 4: PROFIL & PENGATURAN -->
+      <div id="view-profil" class="hidden">
+        <section class="card" style="margin-top:0;text-align:center;">
+          <div class="pin-logo" style="width:52px;height:52px;font-size:24px;margin-bottom:8px;">✿</div>
+          <h2 id="profile-name" style="margin:0;font-size:17px;">Widya</h2>
+          <div class="sub" style="margin-top:4px;">Aplikasi Offline Mandiri Berbasis APK</div>
+        </section>
+
+        <!-- KEAMANAN PIN 4-6 DIGIT -->
+        <section class="card">
+          <div class="card-title">Keamanan Kunci Cepat PIN</div>
+          <div class="sub" id="pin-status-text" style="margin:6px 0 12px;">PIN 4–6 digit aktif</div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-outline" onclick="startChangePin()">Ubah / Pasang PIN</button>
+            <button class="btn-outline" id="disable-pin-btn" style="color:var(--red);" onclick="disablePin()">Nonaktifkan PIN</button>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-title">
+            <span>Efek Suara Tombol & Catat</span>
+            <span class="link" id="profile-sound-status" onclick="toggleSound()">Aktif 🔊</span>
+          </div>
+          <div class="field" style="margin-top:12px;">
+            <label>Nama Panggilan</label>
+            <input type="text" id="edit-profile-name">
+          </div>
+          <div class="field">
+            <label>Target Tabungan Bulanan (Rp)</label>
+            <input type="number" id="target-saving-input" placeholder="3000000">
+          </div>
+          <button class="btn" style="width:100%;" onclick="saveProfileSettings()">Simpan Pengaturan</button>
+        </section>
+
+        <section class="card">
+          <div class="card-title">Ekspor & Cadangkan Data</div>
+          <div class="sub" style="margin:6px 0 12px;">Kirim atau simpan laporan ke Excel (CSV) dan file Backup JSON.</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <button class="btn-outline" onclick="exportCSV()">📊 Ekspor Laporan ke Excel (CSV)</button>
+            <button class="btn-outline" onclick="backupJSON()">💾 Simpan File Backup (JSON)</button>
+            <label class="btn-outline" style="text-align:center;display:block;">
+              📂 Pulihkan Data dari Backup (JSON)
+              <input type="file" accept=".json" class="hidden" onchange="restoreJSON(event)">
+            </label>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- NAVIGASI BAWAH -->
+    <nav>
+      <span id="nav-beranda" class="active" onclick="playSound('tap'); switchTab('beranda')"><b>⌂</b>Beranda</span>
+      <span id="nav-transaksi" onclick="playSound('tap'); switchTab('transaksi')"><b>≡</b>Transaksi</span>
+      <span id="nav-laporan" onclick="playSound('tap'); switchTab('laporan')"><b>▥</b>Laporan</span>
+      <span id="nav-profil" onclick="playSound('tap'); switchTab('profil')"><b>◎</b>Profil</span>
+    </nav>
+  </div>
+
+  <!-- MODAL TAMBAH / EDIT TRANSAKSI -->
+  <div class="modal" id="modal">
+    <div class="sheet">
+      <h3 id="modal-title">Tambah transaksi</h3>
+      <input type="hidden" id="edit-tx-id">
+      <div class="field">
+        <label>Jenis transaksi</label>
+        <select id="type" onchange="playSound('tap')">
+          <option value="expense">Pengeluaran</option>
+          <option value="income">Pemasukan</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Dompet / Metode Bayar</label>
+        <select id="wallet" onchange="playSound('tap')">
+          <option value="Tunai">💵 Tunai</option>
+          <option value="Bank">🏦 Bank / Transfer</option>
+          <option value="E-Wallet">📱 E-Wallet (QRIS / GoPay / DANA)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Nama transaksi / Toko</label>
+        <input id="name" placeholder="Contoh: Belanja FamilyMart">
+      </div>
+      <div class="field">
+        <label>Jumlah (Rp)</label>
+        <input id="value" type="number" inputmode="numeric" placeholder="25000">
+      </div>
+      <div class="field">
+        <label>Tanggal</label>
+        <input id="tx-date" type="date">
+      </div>
+      <div class="field">
+        <label>Kategori</label>
+        <select id="category" onchange="playSound('tap')">
+          <option>Makanan</option>
+          <option>Transportasi</option>
+          <option>Belanja</option>
+          <option>Gaji</option>
+          <option>Tagihan</option>
+          <option>Tabungan</option>
+          <option>Lainnya</option>
+        </select>
+      </div>
+      <div class="actions">
+        <button class="btn" style="background:#eee8f0;color:#625a6d" onclick="playSound('tap'); closeModal()">Batal</button>
+        <button class="btn" onclick="saveTx()">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL ATUR BATAS ANGGARAN -->
+  <div class="modal" id="budget-modal">
+    <div class="sheet">
+      <h3>Atur Batas Anggaran Bulanan (Rp)</h3>
+      <div class="sub" style="margin-bottom:10px;">Isi 0 jika kategori tidak dibatasi.</div>
+      <div class="field"><label>🍽️ Makanan</label><input type="number" id="bdg-Makanan" placeholder="1000000"></div>
+      <div class="field"><label>🛵 Transportasi</label><input type="number" id="bdg-Transportasi" placeholder="500000"></div>
+      <div class="field"><label>🛍️ Belanja</label><input type="number" id="bdg-Belanja" placeholder="750000"></div>
+      <div class="field"><label>🧾 Tagihan</label><input type="number" id="bdg-Tagihan" placeholder="1000000"></div>
+      <div class="field"><label>📦 Lainnya</label><input type="number" id="bdg-Lainnya" placeholder="500000"></div>
+      <div class="actions">
+        <button class="btn" style="background:#eee8f0;color:#625a6d" onclick="playSound('tap'); closeBudgetModal()">Batal</button>
+        <button class="btn" onclick="saveBudgets()">Simpan Anggaran</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'widya_finance_apk_v5';
+    const LEGACY_KEY = 'widya_finance_apk_v4';
+    const DEFAULT_BUDGETS = {
+      Makanan: 1000000,
+      Transportasi: 500000,
+      Belanja: 750000,
+      Tagihan: 1000000,
+      Lainnya: 500000
+    };
+
+    let appData = {
+      userName: 'Widya',
+      pin: null,
+      recoveryWord: '',
+      targetSaving: 3000000,
+      budgets: { ...DEFAULT_BUDGETS },
+      tx: [],
+      chats: []
+    };
+
+    let pinMode = 'unlock'; // 'setup' | 'change' | 'unlock'
+    let pinBuffer = '';
+    let showPinNumbers = false;
+    let isPinBusy = false;
+    let txFilter = 'all';
+    let walletFilter = 'all';
+
+    // --- MESIN EFEK SUARA MIKRO (WEB AUDIO API) ---
+    let audioCtx = null;
+    let soundEnabled = localStorage.getItem('widya_sound') !== 'false';
+
+    function getAudioCtx() {
+      if (!audioCtx) {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (Ctx) audioCtx = new Ctx();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }
+
+    function playSound(type = 'tap') {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioCtx();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+
+        if (type === 'tap') {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(560, now);
+          osc.frequency.exponentialRampToValueAtTime(740, now + 0.035);
+          gain.gain.setValueAtTime(0.035, now);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.start(now); osc.stop(now + 0.045);
+        } else if (type === 'success') {
+          [587.33, 880].forEach((freq, idx) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            const start = now + idx * 0.075;
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, start);
+            gain.gain.setValueAtTime(0.0001, start);
+            gain.gain.linearRampToValueAtTime(0.06, start + 0.015);
+            gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.18);
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.start(start); osc.stop(start + 0.19);
+          });
+        } else if (type === 'softError') {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(250, now);
+          osc.frequency.linearRampToValueAtTime(190, now + 0.14);
+          gain.gain.setValueAtTime(0.045, now);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.start(now); osc.stop(now + 0.16);
+        }
+      } catch (e) {}
+    }
+
+    function updateSoundUI() {
+      const btn = document.getElementById('sound-toggle-btn');
+      const status = document.getElementById('profile-sound-status');
+      if (btn) btn.textContent = soundEnabled ? '🔊' : '🔇';
+      if (status) status.textContent = soundEnabled ? 'Aktif 🔊' : 'Mati 🔇';
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      localStorage.setItem('widya_sound', String(soundEnabled));
+      updateSoundUI();
+      if (soundEnabled) playSound('success');
+    }
+
+    // --- HELPER TANGGAL & FORMAT ---
+    const rp = n => 'Rp' + Number(n || 0).toLocaleString('id-ID');
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+    function todayISO() {
+      const d = new Date();
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+
+    function formatDisplayDate(iso) {
+      if (!iso) return '';
+      const [y, m, d] = iso.split('-');
+      return d && m && y ? `${d}/${m}/${y}` : iso;
+    }
+
+    function persistData() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+      } catch (e) {
+        alert('Memori penyimpanan hampir penuh. Hapus riwayat chat lama atau ekspor backup.');
+      }
+    }
+
+    // --- SISTEM PIN 4-6 DIGIT (STABIL & ANTI TYPO) ---
+    function showPinScreen(mode) {
+      pinMode = mode;
+      pinBuffer = '';
+      isPinBusy = false;
+      showPinNumbers = (mode === 'setup' || mode === 'change');
+
+      document.getElementById('app-screen').classList.add('hidden');
+      document.getElementById('pin-screen').classList.remove('hidden');
+
+      const isCreating = (mode === 'setup' || mode === 'change');
+      document.getElementById('setup-name-box').classList.toggle('hidden', !isCreating);
+      document.getElementById('setup-pin-actions').classList.toggle('hidden', !isCreating);
+      document.getElementById('unlock-pin-actions').classList.toggle('hidden', isCreating);
+      document.getElementById('toggle-pin-eye').classList.toggle('hidden', !isCreating);
+
+      document.getElementById('skip-pin-link').classList.toggle('hidden', mode !== 'setup');
+      document.getElementById('cancel-pin-link').classList.toggle('hidden', mode !== 'change');
+
+      if (isCreating) {
+        document.getElementById('pin-title').textContent = mode === 'change' ? 'Ubah / Pasang PIN Baru' : 'Buat PIN Cepat (4–6 Digit)';
+        document.getElementById('pin-subtitle').textContent = 'Ketuk 4 sampai 6 angka di bawah ini';
+        document.getElementById('setup-user-name').value = appData.userName || 'Widya';
+        document.getElementById('setup-recovery-word').value = appData.recoveryWord || '';
+        document.getElementById('pin-hint').textContent = 'Pastikan angka PIN sudah sesuai lalu tekan Simpan';
+      } else {
+        const storedPin = String(appData.pin || '').trim();
+        document.getElementById('pin-title').textContent = 'Halo, ' + (appData.userName || 'Widya');
+        document.getElementById('pin-subtitle').textContent = `Masukkan ${storedPin.length} digit PIN untuk masuk`;
+        document.getElementById('pin-hint').textContent = '';
+      }
+      renderPinDots();
+    }
+
+    function togglePinEye() {
+      playSound('tap');
+      showPinNumbers = !showPinNumbers;
+      renderPinDots();
+    }
+
+    function renderPinDots() {
+      const dotsEl = document.getElementById('pin-dots');
+      if (showPinNumbers && (pinMode === 'setup' || pinMode === 'change')) {
+        dotsEl.innerHTML = pinBuffer.length
+          ? `<span class="pin-plain-text">${esc(pinBuffer)}</span>`
+          : `<span class="sub">Belum ada angka</span>`;
+        return;
+      }
+
+      const storedPin = String(appData.pin || '').trim();
+      const targetLen = (pinMode === 'unlock' && storedPin.length >= 4) ? storedPin.length : 6;
+      let html = '';
+      for (let i = 0; i < targetLen; i++) {
+        const filled = i < pinBuffer.length ? 'filled' : '';
+        const opacity = (pinMode !== 'unlock' && i >= 4 && i >= pinBuffer.length) ? 'style="opacity:0.35"' : '';
+        html += `<span class="pin-dot ${filled}" ${opacity}></span>`;
+      }
+      dotsEl.innerHTML = html;
+    }
+
+    function pressPin(digit) {
+      if (isPinBusy) return;
+      const storedPin = String(appData.pin || '').trim();
+      const maxLen = (pinMode === 'unlock' && storedPin.length >= 4) ? storedPin.length : 6;
+      if (pinBuffer.length >= maxLen) return;
+
+      playSound('tap');
+      pinBuffer += String(digit);
+      renderPinDots();
+
+      if (pinMode === 'unlock' && pinBuffer.length === storedPin.length) {
+        isPinBusy = true;
+        setTimeout(() => {
+          if (pinBuffer === storedPin) {
+            playSound('success');
+            isPinBusy = false;
+            openMainApp();
+          } else {
+            playSound('softError');
+            const dots = document.getElementById('pin-dots');
+            dots.classList.add('shake');
+            document.getElementById('pin-hint').textContent = 'PIN salah, silakan coba lagi.';
+            setTimeout(() => {
+              dots.classList.remove('shake');
+              pinBuffer = '';
+              isPinBusy = false;
+              renderPinDots();
+            }, 280);
+          }
+        }, 90);
+      }
+    }
+
+    function backspacePin() {
+      if (isPinBusy || !pinBuffer.length) return;
+      playSound('tap');
+      pinBuffer = pinBuffer.slice(0, -1);
+      renderPinDots();
+    }
+
+    function clearPin() {
+      if (isPinBusy) return;
+      playSound('tap');
+      pinBuffer = '';
+      renderPinDots();
+    }
+
+    function saveNewPinSetup() {
+      const nameVal = document.getElementById('setup-user-name').value.trim();
+      const recVal = document.getElementById('setup-recovery-word').value.trim();
+      if (nameVal) appData.userName = nameVal;
+      if (recVal) appData.recoveryWord = recVal.toLowerCase();
+
+      if (pinBuffer.length < 4 || pinBuffer.length > 6 || !/^\d{4,6}$/.test(pinBuffer)) {
+        playSound('softError');
+        document.getElementById('pin-hint').textContent = 'PIN wajib terdiri dari 4 hingga 6 angka.';
+        return;
+      }
+      appData.pin = pinBuffer;
+      initDefaultChatIfEmpty();
+      persistData();
+      playSound('success');
+      openMainApp();
+    }
+
+    function skipPinSetup() {
+      const nameVal = document.getElementById('setup-user-name').value.trim();
+      if (nameVal) appData.userName = nameVal;
+      appData.pin = null;
+      initDefaultChatIfEmpty();
+      persistData();
+      playSound('success');
+      openMainApp();
+    }
+
+    function cancelPinChange() {
+      playSound('tap');
+      openMainApp();
+    }
+
+    function recoverForgottenPin() {
+      if (!appData.recoveryWord) {
+        if (confirm('Kata pemulihan belum diatur. Reset PIN sekarang agar bisa masuk ke aplikasi?')) {
+          appData.pin = null;
+          persistData();
+          showPinScreen('setup');
+        }
+        return;
+      }
+      const ans = prompt('Masukkan Kata Pemulihan yang kamu buat saat memasang PIN:');
+      if (ans && ans.trim().toLowerCase() === appData.recoveryWord) {
+        playSound('success');
+        alert('Kata pemulihan cocok! Silakan buat PIN baru.');
+        showPinScreen('setup');
+      } else if (ans !== null) {
+        playSound('softError');
+        alert('Kata pemulihan tidak cocok.');
+      }
+    }
+
+    function startChangePin() {
+      playSound('tap');
+      showPinScreen('change');
+    }
+
+    function disablePin() {
+      appData.pin = null;
+      persistData();
+      playSound('success');
+      updateProfileUI();
+      alert('Kunci PIN dinonaktifkan. Aplikasi akan terbuka langsung.');
+    }
+
+    function lockAppNow() {
+      playSound('tap');
+      const storedPin = String(appData.pin || '').trim();
+      if (storedPin.length < 4) {
+        if (confirm('Kamu belum memasang PIN. Pasang PIN 4–6 digit sekarang?')) showPinScreen('change');
+        return;
+      }
+      showPinScreen('unlock');
+    }
+
+    function initDefaultChatIfEmpty() {
+      if (!appData.chats.length) {
+        appData.chats.push({
+          sender: 'ai',
+          html: `Halo <b>${esc(appData.userName || 'Widya')}</b>! Catat transaksi dengan dompetnya, misalnya <i>"Makan 25.000 qris"</i>, <i>"Gaji 5.000.000 bank"</i>, atau klik 📷 untuk foto struk.`
+        });
+      }
+    }
+
+    function openMainApp() {
+      document.getElementById('pin-screen').classList.add('hidden');
+      document.getElementById('app-screen').classList.remove('hidden');
+      updateProfileUI();
+      updateSoundUI();
+      renderAll();
+    }
+
+    function updateProfileUI() {
+      const name = appData.userName || 'Widya';
+      document.getElementById('greeting-user').textContent = 'Halo, ' + name;
+      document.getElementById('user-avatar').textContent = name.charAt(0).toUpperCase();
+      document.getElementById('profile-name').textContent = name;
+      document.getElementById('edit-profile-name').value = name;
+      document.getElementById('target-saving-input').value = appData.targetSaving || 3000000;
+
+      const storedPin = String(appData.pin || '').trim();
+      const hasPin = storedPin.length >= 4;
+      document.getElementById('lock-now-btn').classList.toggle('hidden', !hasPin);
+      document.getElementById('pin-status-text').textContent = hasPin
+        ? `PIN ${storedPin.length} digit sedang aktif 🔒`
+        : 'PIN tidak aktif (aplikasi terbuka langsung)';
+      document.getElementById('disable-pin-btn').classList.toggle('hidden', !hasPin);
+    }
+
+    // --- NAVIGASI TAB ---
+    function switchTab(tab) {
+      ['beranda', 'transaksi', 'laporan', 'profil'].forEach(t => {
+        document.getElementById('view-' + t).classList.toggle('hidden', t !== tab);
+        document.getElementById('nav-' + t).classList.toggle('active', t === tab);
+      });
+      if (tab === 'laporan') renderReports();
+      if (tab === 'transaksi') renderTxViews();
+    }
+
+    // --- PARSER TITIK RIBUAN RUPIAH & BAHASA SEHARI-HARI (100% OFFLINE) ---
+    function parseIndonesianNumber(numStr, unitStr) {
+      const unit = (unitStr || '').toLowerCase();
+      let multiplier = 1;
+      if (unit === 'juta' || unit === 'jt') multiplier = 1e6;
+      else if (unit === 'ribu' || unit === 'rb' || unit === 'k') multiplier = 1e3;
+
+      if (/^\d{1,3}(\.\d{3})+$/.test(numStr)) {
+        return Math.round(Number(numStr.replace(/\./g, '')) * multiplier);
+      }
+      if (multiplier === 1 && /^\d{1,3}(,\d{3})+$/.test(numStr)) {
+        return Math.round(Number(numStr.replace(/,/g, '')));
+      }
+      if (/^\d+\.\d{1,2}$/.test(numStr)) {
+        return Math.round(parseFloat(numStr) * multiplier);
+      }
+      const normalized = numStr.replace(/\./g, '').replace(',', '.');
+      return Math.round(parseFloat(normalized) * multiplier);
+    }
+
+    function extractDateFromText(text) {
+      const now = new Date();
+      const year = now.getFullYear();
+
+      if (/\bkemarin\b/i.test(text)) {
+        const yest = new Date(now);
+        yest.setDate(now.getDate() - 1);
+        return {
+          iso: yest.getFullYear() + '-' + String(yest.getMonth() + 1).padStart(2, '0') + '-' + String(yest.getDate()).padStart(2, '0'),
+          cleaned: text.replace(/\bkemarin\b/i, '')
+        };
+      }
+
+      const months = {
+        januari: '01', jan: '01', februari: '02', feb: '02', maret: '03', mar: '03',
+        april: '04', apr: '04', mei: '05', juni: '06', jun: '06', juli: '07', jul: '07',
+        agustus: '08', agu: '08', agt: '08', september: '09', sep: '09',
+        oktober: '10', okt: '10', november: '11', nov: '11', desember: '12', des: '12'
+      };
+
+      const indoDate = text.match(/(?:tanggal|tgl)?\s*(\d{1,2})\s+(januari|jan|februari|feb|maret|mar|april|apr|mei|juni|jun|juli|jul|agustus|agu|agt|september|sep|oktober|okt|november|nov|desember|des)(?:\s+(\d{4}))?/i);
+      if (indoDate) {
+        const day = indoDate[1].padStart(2, '0');
+        const mon = months[indoDate[2].toLowerCase()];
+        const yr = indoDate[3] || year;
+        return { iso: `${yr}-${mon}-${day}`, cleaned: text.replace(indoDate[0], '') };
+      }
+
+      const slashDate = text.match(/(?:tanggal|tgl)?\s*(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?/i);
+      if (slashDate) {
+        const day = slashDate[1].padStart(2, '0');
+        const mon = slashDate[2].padStart(2, '0');
+        let yr = slashDate[3] || String(year);
+        if (yr.length === 2) yr = '20' + yr;
+        return { iso: `${yr}-${mon}-${day}`, cleaned: text.replace(slashDate[0], '') };
+      }
+
+      return { iso: todayISO(), cleaned: text.replace(/\bhari ini\b/i, '') };
+    }
+
+    function detectWallet(text) {
+      if (/\b(qris|gopay|ovo|dana|shopeepay|linkaja|ewallet|e-wallet)\b/i.test(text)) return 'E-Wallet';
+      if (/\b(bank|transfer|tf|bca|bri|bni|mandiri|bsi|cimb|debit|mbanking|m-banking|rekening)\b/i.test(text)) return 'Bank';
+      return 'Tunai';
+    }
+
+    function parseSingleSegment(segment, inheritedDateISO) {
+      const amountMatch = segment.match(/(?:rp\.?\s*)?(\d{1,3}(?:[.,]\d{3})+|\d+(?:[.,]\d+)?)\s*(juta|jt|ribu|rb|k)?\b/i);
+      if (!amountMatch) return null;
+
+      const value = parseIndonesianNumber(amountMatch[1], amountMatch[2]);
+      if (!value || value < 1) return null;
+
+      const isIncome = /gajian|gaji|bonus|masuk|terima|pendapatan|jual/i.test(segment);
+      const type = isIncome ? 'income' : 'expense';
+      const wallet = detectWallet(segment);
+
+      let category = 'Lainnya';
+      if (isIncome) category = 'Gaji';
+      else if (/makan|kopi|jajan|minum|bakso|nasi|resto|cafe|sarapan|ayam|mie/i.test(segment)) category = 'Makanan';
+      else if (/bbm|bensin|parkir|gojek|grab|ojol|tol|kereta|transport|pertalite|pertamax/i.test(segment)) category = 'Transportasi';
+      else if (/belanja|minimarket|indomaret|alfamart|familymart|baju|sabun|supermarket/i.test(segment)) category = 'Belanja';
+      else if (/listrik|air|wifi|internet|pulsa|kuota|tagihan|kos|sewa|token/i.test(segment)) category = 'Tagihan';
+      else if (/tabung|nabung|investasi|emas/i.test(segment)) category = 'Tabungan';
+
+      let cleanName = segment
+        .replace(amountMatch[0], '')
+        .replace(/\b(pakai|pake|via|lewat|masuk|ke|dari|tunai|cash|qris|gopay|ovo|dana|bank|transfer|tf|bca|bri|bni|mandiri)\b/gi, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      if (!cleanName) cleanName = isIncome ? 'Pemasukan' : 'Pengeluaran';
+      cleanName = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+
+      return {
+        id: Date.now() + Math.floor(Math.random() * 10000),
+        type,
+        wallet,
+        name: cleanName,
+        value,
+        category,
+        date: inheritedDateISO
+      };
+    }
+
+    // --- CHAT PENCATAT TRANSAKSI ---
+    function fillChat(text) {
+      playSound('tap');
+      document.getElementById('chat-input').value = text;
+      sendChat();
+    }
+
+    function sendChat() {
+      const input = document.getElementById('chat-input');
+      const rawText = input.value.trim();
+      if (!rawText) return;
+
+      appData.chats.push({ sender: 'user', html: esc(rawText) });
+      input.value = '';
+
+      if (/analisis|saran|evaluasi|laporan/i.test(rawText)) {
+        triggerAIAnalysis(true);
+        return;
+      }
+
+      const { iso, cleaned } = extractDateFromText(rawText);
+      const parts = cleaned.split(/,|\n|\bdan\b/i).map(s => s.trim()).filter(Boolean);
+      const parsedItems = parts.map(p => parseSingleSegment(p, iso)).filter(Boolean);
+
+      if (parsedItems.length) {
+        playSound('success');
+        parsedItems.forEach(item => appData.tx.unshift(item));
+        appData.chats.push({
+          sender: 'ai',
+          html: `<b>${parsedItems.length > 1 ? parsedItems.length + ' Transaksi Tercatat!' : 'Tercatat!'}</b>${renderChatTxCards(parsedItems)}`
+        });
+      } else {
+        playSound('softError');
+        appData.chats.push({
+          sender: 'ai',
+          html: `Nominal belum terbaca. Contoh: <i>"Makan siang 25.000 qris"</i> atau <i>"Gaji 5.000.000 bank"</i>.`
+        });
+      }
+
+      persistData();
+      renderAll();
+    }
+
+    function renderChatTxCards(items) {
+      return items.map(item => `
+        <div class="receipt-card" id="chat-tx-${item.id}">
+          <div>📝 <b>${esc(item.name)}</b></div>
+          <div>💵 <b>${rp(item.value)}</b> · <span class="wallet-tag">${esc(item.wallet)}</span></div>
+          <div>📅 ${formatDisplayDate(item.date)} · ${esc(item.category)}</div>
+          <div class="card-actions">
+            <span class="link" onclick="playSound('tap'); openModal(${item.id})">✏️ Ubah</span>
+            <span class="link danger" onclick="deleteTx(${item.id}, true)">🗑️ Batal</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // --- KOMPRESI & SIMPAN FOTO STRUK SECARA OFFLINE ---
+    function compressImageFile(file, maxWidth, quality) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = new Image();
+          img.onload = function() {
+            const scale = Math.min(1, maxWidth / img.width);
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.round(img.width * scale);
+            canvas.height = Math.round(img.height * scale);
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function handleReceiptUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      event.target.value = '';
+
+      const thumbDataUrl = await compressImageFile(file, 320, 0.55);
+
+      const txItem = {
+        id: Date.now(),
+        type: 'expense',
+        name: 'Struk Belanja',
+        value: 25000,
+        category: 'Belanja',
+        wallet: 'Tunai',
+        date: todayISO()
+      };
+      appData.tx.unshift(txItem);
+      playSound('success');
+
+      appData.chats.push({
+        sender: 'user',
+        html: `<img src="${thumbDataUrl}" class="receipt-thumb" alt="Struk">Mengunggah foto struk belanja`
+      });
+      appData.chats.push({
+        sender: 'ai',
+        html: `<b>Foto Struk Tersimpan!</b>
+          <div style="font-size:11px;color:#6f6878;margin-top:2px;">Ketuk <b>Ubah Nominal</b> di bawah untuk menyesuaikan harga & nama toko:</div>
+          <div class="receipt-card" id="chat-tx-${txItem.id}">
+            <div>🧾 <b>${esc(txItem.name)}</b></div>
+            <div>💵 <b>${rp(txItem.value)}</b> · <span class="wallet-tag">${esc(txItem.wallet)}</span></div>
+            <div>📅 ${formatDisplayDate(txItem.date)} · ${esc(txItem.category)}</div>
+            <div class="card-actions">
+              <span class="link" onclick="playSound('tap'); openModal(${txItem.id})">✏️ Isi / Ubah Nominal</span>
+              <span class="link danger" onclick="deleteTx(${txItem.id}, true)">🗑️ Batal</span>
+            </div>
+          </div>`
+      });
+
+      persistData();
+      renderAll();
+    }
+
+    // --- ANALISIS KEUANGAN & PERINGATAN ANGGARAN ---
+    function triggerAIAnalysis(skipUserBubble = false) {
+      if (!skipUserBubble) {
+        appData.chats.push({ sender: 'user', html: 'Tolong analisis keuangan & anggaranku bulan ini' });
+      }
+
+      const curMonth = todayISO().slice(0, 7);
+      const monthTx = appData.tx.filter(x => (x.date || '').startsWith(curMonth));
+
+      const inc = monthTx.filter(x => x.type === 'income').reduce((a, b) => a + b.value, 0);
+      const exp = monthTx.filter(x => x.type === 'expense').reduce((a, b) => a + b.value, 0);
+      const sisa = inc - exp;
+
+      const byCat = {};
+      monthTx.filter(x => x.type === 'expense').forEach(x => {
+        byCat[x.category] = (byCat[x.category] || 0) + x.value;
+      });
+
+      const overBudgets = [];
+      Object.entries(appData.budgets || {}).forEach(([cat, limit]) => {
+        if (limit > 0 && byCat[cat]) {
+          const pct = Math.round((byCat[cat] / limit) * 100);
+          if (pct >= 80) overBudgets.push(`${cat} (${pct}% dari ${rp(limit)})`);
+        }
+      });
+
+      const topCat = Object.entries(byCat).sort((a, b) => b[1] - a[1])[0];
+
+      const reply = `<b>📊 Evaluasi Keuangan Bulan Ini</b><br>
+        • Pemasukan: <b>${rp(inc)}</b><br>
+        • Pengeluaran: <b>${rp(exp)}</b><br>
+        • Selisih Bulan Ini: <b>${rp(sisa)}</b><br><br>
+        <b>💡 Catatan Keuanganmu:</b><br>
+        ${overBudgets.length
+          ? `• ⚠️ <b>Peringatan Anggaran:</b> ${overBudgets.join(', ')}. Kendalikan belanja di pos ini.<br>`
+          : `• ✅ Semua kategori pengeluaran masih aman di bawah batas anggaran bulan ini.<br>`}
+        ${topCat
+          ? `• Pengeluaran terbesar: <b>${topCat[0]}</b> sebesar <b>${rp(topCat[1])}</b>.<br>`
+          : `• Belum ada transaksi pengeluaran tercatat bulan ini.<br>`}
+        • Target tabungan bulanan: <b>${rp(appData.targetSaving)}</b>.`;
+
+      playSound('success');
+      appData.chats.push({ sender: 'ai', html: reply });
+      persistData();
+      renderAll();
+    }
+
+    // --- TAMBAH, EDIT & HAPUS TRANSAKSI ---
+    function openModal(editId = null) {
+      document.getElementById('modal').style.display = 'flex';
+      if (editId) {
+        const item = appData.tx.find(x => x.id === editId);
+        if (!item) return;
+        document.getElementById('modal-title').textContent = 'Ubah transaksi';
+        document.getElementById('edit-tx-id').value = item.id;
+        document.getElementById('type').value = item.type;
+        document.getElementById('wallet').value = item.wallet || 'Tunai';
+        document.getElementById('name').value = item.name;
+        document.getElementById('value').value = item.value;
+        document.getElementById('tx-date').value = item.date || todayISO();
+        document.getElementById('category').value = item.category;
+      } else {
+        document.getElementById('modal-title').textContent = 'Tambah transaksi';
+        document.getElementById('edit-tx-id').value = '';
+        document.getElementById('type').value = 'expense';
+        document.getElementById('wallet').value = 'Tunai';
+        document.getElementById('name').value = '';
+        document.getElementById('value').value = '';
+        document.getElementById('tx-date').value = todayISO();
+        document.getElementById('category').value = 'Makanan';
+      }
+    }
+
+    function closeModal() { document.getElementById('modal').style.display = 'none'; }
+
+    function saveTx() {
+      const editId = document.getElementById('edit-tx-id').value;
+      const type = document.getElementById('type').value;
+      const wallet = document.getElementById('wallet').value || 'Tunai';
+      const name = document.getElementById('name').value.trim();
+      const value = Number(document.getElementById('value').value);
+      const date = document.getElementById('tx-date').value || todayISO();
+      const category = document.getElementById('category').value;
+
+      if (!name || !value || value < 1) {
+        playSound('softError');
+        return alert('Isi nama dan jumlah dengan benar.');
+      }
+
+      if (editId) {
+        const idx = appData.tx.findIndex(x => x.id === Number(editId));
+        if (idx !== -1) {
+          appData.tx[idx] = { ...appData.tx[idx], type, wallet, name, value, date, category };
+        }
+      } else {
+        appData.tx.unshift({ id: Date.now(), type, wallet, name, value, date, category });
+      }
+
+      playSound('success');
+      closeModal();
+      persistData();
+      renderAll();
+    }
+
+    function deleteTx(id, fromChat = false) {
+      if (!confirm('Hapus transaksi ini?')) return;
+      appData.tx = appData.tx.filter(x => x.id !== id);
+      if (fromChat) {
+        appData.chats.push({ sender: 'ai', html: '<i>Transaksi dibatalkan dan dihapus dari catatan.</i>' });
+      }
+      playSound('tap');
+      persistData();
+      renderAll();
+    }
+
+    // --- ATUR BATAS ANGGARAN ---
+    function openBudgetModal() {
+      const b = appData.budgets || DEFAULT_BUDGETS;
+      ['Makanan', 'Transportasi', 'Belanja', 'Tagihan', 'Lainnya'].forEach(cat => {
+        document.getElementById('bdg-' + cat).value = b[cat] || 0;
+      });
+      document.getElementById('budget-modal').style.display = 'flex';
+    }
+
+    function closeBudgetModal() { document.getElementById('budget-modal').style.display = 'none'; }
+
+    function saveBudgets() {
+      if (!appData.budgets) appData.budgets = {};
+      ['Makanan', 'Transportasi', 'Belanja', 'Tagihan', 'Lainnya'].forEach(cat => {
+        appData.budgets[cat] = Math.max(0, Number(document.getElementById('bdg-' + cat).value) || 0);
+      });
+      persistData();
+      closeBudgetModal();
+      playSound('success');
+      renderReports();
+    }
+
+    // --- FILTER & RENDER LIST ---
+    function setTxFilter(flt) {
+      playSound('tap');
+      txFilter = flt;
+      ['all', 'income', 'expense'].forEach(f => {
+        document.getElementById('flt-' + f).classList.toggle('active', f === flt);
+      });
+      renderTxViews();
+    }
+
+    function setWalletFilter(w) {
+      playSound('tap');
+      walletFilter = w;
+      ['all', 'Tunai', 'Bank', 'E-Wallet'].forEach(item => {
+        document.getElementById('wflt-' + item).classList.toggle('active', item === w);
+      });
+      renderTxViews();
+    }
+
+    function renderTxList(items) {
+      if (!items.length) return '<div class="empty">Belum ada transaksi yang sesuai.</div>';
+      return items.map(x => `
+        <div class="tx">
+          <div class="txicon">${x.type === 'income' ? '↙' : '↗'}</div>
+          <div>
+            <div class="txname">${esc(x.name)}</div>
+            <div class="txdate">
+              <span class="wallet-tag">${esc(x.wallet || 'Tunai')}</span> · ${esc(x.category)} · ${formatDisplayDate(x.date)}
+            </div>
+          </div>
+          <div class="txright">
+            <div class="txamount" style="color:${x.type === 'income' ? '#47866c' : '#bd7180'}">
+              ${x.type === 'income' ? '+' : '−'}${rp(x.value)}
+            </div>
+            <div class="txtools">
+              <span class="link" onclick="playSound('tap'); openModal(${x.id})">Ubah</span>
+              <span class="link danger" onclick="deleteTx(${x.id})">Hapus</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderTxViews() {
+      document.getElementById('transactions-home').innerHTML = renderTxList(appData.tx.slice(0, 5));
+
+      const q = (document.getElementById('search-tx').value || '').toLowerCase();
+      const filtered = appData.tx.filter(x => {
+        const w = x.wallet || 'Tunai';
+        const matchType = txFilter === 'all' || x.type === txFilter;
+        const matchWallet = walletFilter === 'all' || w === walletFilter;
+        const matchQuery = !q || x.name.toLowerCase().includes(q) || x.category.toLowerCase().includes(q) || w.toLowerCase().includes(q);
+        return matchType && matchWallet && matchQuery;
+      });
+      document.getElementById('transactions-all').innerHTML = renderTxList(filtered);
+    }
+
+    // --- LAPORAN & BATAS ANGGARAN ---
+    function renderReports() {
+      const period = document.getElementById('report-period').value;
+      const now = new Date();
+      const curMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+      const curYear = String(now.getFullYear());
+
+      const scopedTx = appData.tx.filter(x => {
+        if (!x.date) return true;
+        if (period === 'month') return x.date.startsWith(curMonth);
+        if (period === 'year') return x.date.startsWith(curYear);
+        return true;
+      });
+
+      const inc = scopedTx.filter(x => x.type === 'income').reduce((a, b) => a + b.value, 0);
+      const exp = scopedTx.filter(x => x.type === 'expense').reduce((a, b) => a + b.value, 0);
+      const maxVal = Math.max(inc, exp, 1);
+
+      document.getElementById('cashflow-bars').innerHTML = `
+        <div class="bar-row">
+          <div class="bar-label"><span>Pemasukan</span><span style="color:var(--green)">${rp(inc)}</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${(inc/maxVal)*100}%;background:var(--green)"></div></div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label"><span>Pengeluaran</span><span style="color:var(--red)">${rp(exp)}</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${(exp/maxVal)*100}%;background:var(--red)"></div></div>
+        </div>
+      `;
+
+      const monthExpByCat = {};
+      appData.tx.filter(x => x.type === 'expense' && (x.date || '').startsWith(curMonth)).forEach(x => {
+        monthExpByCat[x.category] = (monthExpByCat[x.category] || 0) + x.value;
+      });
+
+      const budgets = appData.budgets || DEFAULT_BUDGETS;
+      const budgetEntries = Object.entries(budgets).filter(([, limit]) => limit > 0);
+      document.getElementById('budget-bars').innerHTML = budgetEntries.length
+        ? budgetEntries.map(([cat, limit]) => {
+            const used = monthExpByCat[cat] || 0;
+            const pct = Math.round((used / limit) * 100);
+            const barWidth = Math.min(100, pct);
+            const color = pct >= 100 ? 'var(--red)' : pct >= 80 ? 'var(--amber)' : 'var(--green)';
+            const statusText = pct >= 100 ? 'Melebihi batas!' : pct >= 80 ? 'Hampir penuh' : 'Aman';
+            return `
+              <div class="bar-row">
+                <div class="bar-label">
+                  <span>${esc(cat)}</span>
+                  <span style="color:${color}">${rp(used)} / ${rp(limit)}</span>
+                </div>
+                <div class="bar-track"><div class="bar-fill" style="width:${barWidth}%;background:${color}"></div></div>
+                <div class="budget-sub"><span>Terpakai ${pct}%</span><span>${statusText}</span></div>
+              </div>
+            `;
+          }).join('')
+        : '<div class="empty">Belum ada batas anggaran yang diatur.</div>';
+
+      const byCat = {};
+      scopedTx.filter(x => x.type === 'expense').forEach(x => {
+        byCat[x.category] = (byCat[x.category] || 0) + x.value;
+      });
+      const sorted = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
+
+      document.getElementById('category-bars').innerHTML = sorted.length
+        ? sorted.map(([cat, val]) => {
+            const pct = exp > 0 ? Math.round((val / exp) * 100) : 0;
+            return `
+              <div class="bar-row">
+                <div class="bar-label"><span>${esc(cat)} (${pct}%)</span><span>${rp(val)}</span></div>
+                <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:var(--purple)"></div></div>
+              </div>
+            `;
+          }).join('')
+        : '<div class="empty">Belum ada pengeluaran pada periode ini.</div>';
+    }
+
+    // --- PROFIL, EKSPOR CSV & BACKUP JSON ---
+    function saveProfileSettings() {
+      const newName = document.getElementById('edit-profile-name').value.trim();
+      const newTarget = Number(document.getElementById('target-saving-input').value);
+      if (newName) appData.userName = newName;
+      if (newTarget > 0) appData.targetSaving = newTarget;
+      persistData();
+      updateProfileUI();
+      playSound('success');
+      alert('Pengaturan berhasil disimpan!');
+    }
+
+    async function shareOrDownloadFile(content, filename, mimeType) {
+      const blob = new Blob([content], { type: mimeType });
+      const file = new File([blob], filename, { type: mimeType });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: filename });
+          playSound('success');
+          return;
+        } catch (e) {}
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      playSound('success');
+    }
+
+    function exportCSV() {
+      if (!appData.tx.length) {
+        playSound('softError');
+        return alert('Belum ada transaksi untuk diekspor.');
+      }
+      const rows = [['Tanggal', 'Jenis', 'Dompet', 'Nama Transaksi', 'Kategori', 'Nominal (Rp)']];
+      appData.tx.forEach(x => {
+        rows.push([
+          formatDisplayDate(x.date),
+          x.type === 'income' ? 'Pemasukan' : 'Pengeluaran',
+          x.wallet || 'Tunai',
+          `"${String(x.name).replace(/"/g, '""')}"`,
+          x.category,
+          x.value
+        ]);
+      });
+      shareOrDownloadFile(rows.map(r => r.join(',')).join('\n'), `Laporan_Widya_Finance_${todayISO()}.csv`, 'text/csv;charset=utf-8;');
+    }
+
+    function backupJSON() {
+      shareOrDownloadFile(JSON.stringify(appData, null, 2), `Backup_Widya_Finance_${todayISO()}.json`, 'application/json');
+    }
+
+    function restoreJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (!Array.isArray(parsed.tx)) throw new Error('Format tidak valid');
+          appData = { ...appData, ...parsed };
+          persistData();
+          updateProfileUI();
+          renderAll();
+          playSound('success');
+          alert('Data berhasil dipulihkan!');
+        } catch (err) {
+          playSound('softError');
+          alert('File backup tidak valid.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function renderAll() {
+      const inc = appData.tx.filter(x => x.type === 'income').reduce((a, b) => a + b.value, 0);
+      const exp = appData.tx.filter(x => x.type === 'expense').reduce((a, b) => a + b.value, 0);
+      const bal = inc - exp;
+      const savePct = inc > 0 ? Math.max(0, Math.round((bal / inc) * 100)) : 0;
+
+      document.getElementById('income').textContent = rp(inc);
+      document.getElementById('expense').textContent = rp(exp);
+      document.getElementById('balance').textContent = rp(bal);
+      document.getElementById('saving-pill').textContent = `Tabungan: ${savePct}%`;
+
+      ['Tunai', 'Bank', 'E-Wallet'].forEach(w => {
+        const wInc = appData.tx.filter(x => (x.wallet || 'Tunai') === w && x.type === 'income').reduce((a, b) => a + b.value, 0);
+        const wExp = appData.tx.filter(x => (x.wallet || 'Tunai') === w && x.type === 'expense').reduce((a, b) => a + b.value, 0);
+        document.getElementById('bal-' + w).textContent = rp(wInc - wExp);
+      });
+
+      renderTxViews();
+      renderReports();
+
+      const chatBox = document.getElementById('chat-box');
+      chatBox.innerHTML = appData.chats.map(c => `<div class="msg ${c.sender}">${c.html}</div>`).join('');
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // --- INISIALISASI SAAT APK DIBUKA ---
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedRaw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_KEY);
+      if (!savedRaw) {
+        showPinScreen('setup');
+      } else {
+        try {
+          appData = { ...appData, ...JSON.parse(savedRaw) };
+        } catch (e) {}
+        if (!appData.budgets) appData.budgets = { ...DEFAULT_BUDGETS };
+        initDefaultChatIfEmpty();
+
+        const storedPin = String(appData.pin || '').trim();
+        if (storedPin.length >= 4 && /^\d{4,6}$/.test(storedPin)) {
+          appData.pin = storedPin;
+          showPinScreen('unlock');
+        } else {
+          appData.pin = null;
+          openMainApp();
+        }
+      }
+
+      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+        window.Capacitor.Plugins.App.addListener('backButton', () => {
+          if (document.getElementById('modal').style.display === 'flex') closeModal();
+          else if (document.getElementById('budget-modal').style.display === 'flex') closeBudgetModal();
+          else if (pinMode === 'change' && !document.getElementById('pin-screen').classList.contains('hidden')) {
+            cancelPinChange();
+          } else if (!document.getElementById('view-beranda').classList.contains('hidden')) {
+            window.Capacitor.Plugins.App.exitApp();
+          } else {
+            switchTab('beranda');
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
